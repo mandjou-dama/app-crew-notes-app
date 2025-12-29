@@ -1,43 +1,55 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Platform, KeyboardAvoidingView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '@/types/navigation';
-import { authService } from '@/services/auth.service';
+import React, { useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  Platform,
+  KeyboardAvoidingView,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { AuthStackParamList } from "@/types/navigation";
+import { authService } from "@/services/auth.service";
 
-type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Signup'>;
+type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Signup">;
 
 export function SignupScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignup = async () => {
     if (!email.trim() || !password) {
-      setError('Please enter both email and password.');
+      setError("Please enter both email and password.");
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
-      const { error } = await authService.signUp({ 
-        email: email.trim(), 
-        password 
+      const { error } = await authService.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: "http://localhost:3000/auth/callback",
+        },
       });
-      
+
       if (error) {
         setError(error.message);
-      } 
+      }
       // On success, typically Supabase signs in automatically or sends email.
       // If email confirmation is off, the listener will catch the session.
       // If on, we might need to tell user to check email.
       // For now, we assume simple flow or listener handles it.
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
+      setError(err.message || "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -45,8 +57,8 @@ export function SignupScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
         <View style={styles.content}>
@@ -63,7 +75,7 @@ export function SignupScreen() {
               autoCapitalize="none"
               keyboardType="email-address"
             />
-            
+
             <TextInput
               style={styles.input}
               placeholder="Password"
@@ -75,8 +87,8 @@ export function SignupScreen() {
 
             {error && <Text style={styles.errorText}>{error}</Text>}
 
-            <TouchableOpacity 
-              style={[styles.button, loading && styles.buttonDisabled]} 
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleSignup}
               disabled={loading}
             >
@@ -87,11 +99,13 @@ export function SignupScreen() {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              onPress={() => navigation.navigate('Login')}
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Login")}
               style={styles.linkButton}
             >
-              <Text style={styles.linkText}>Already have an account? Log In</Text>
+              <Text style={styles.linkText}>
+                Already have an account? Log In
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -103,25 +117,25 @@ export function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   keyboardView: {
     flex: 1,
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 24,
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
-    color: '#000',
+    color: "#000",
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginBottom: 32,
   },
   form: {
@@ -130,39 +144,39 @@ const styles = StyleSheet.create({
   input: {
     height: 50,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#fafafa',
+    backgroundColor: "#fafafa",
   },
   errorText: {
-    color: 'red',
+    color: "red",
     fontSize: 14,
   },
   button: {
     height: 50,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 8,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   linkButton: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 16,
   },
   linkText: {
-    color: '#000',
+    color: "#000",
     fontSize: 14,
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
   },
 });

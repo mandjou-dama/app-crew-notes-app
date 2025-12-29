@@ -1,12 +1,12 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notesService } from '@/services/notes.service';
-import { notesKeys } from './queryKeys';
-import { CreateNoteDTO, UpdateNoteDTO } from '@/types/note';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { notesService } from "@/services/notes.service";
+import { notesKeys } from "./queryKeys";
+import { CreateNoteDTO, UpdateNoteDTO } from "@/types/note";
 
 export function useNotes() {
   return useQuery({
     queryKey: notesKeys.lists(),
-    queryFn: notesService.getNotes,
+    queryFn: () => notesService.getNotes(),
   });
 }
 
@@ -21,15 +21,24 @@ export function useCreateNote() {
   });
 }
 
+export const useGetNoteById = (noteId: string) => {
+  return useQuery({
+    queryKey: notesKeys.detail(noteId),
+    queryFn: () => notesService.getNoteById(noteId),
+  });
+};
+
 export function useUpdateNote() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateNoteDTO }) => 
+    mutationFn: ({ id, data }: { id: string; data: UpdateNoteDTO }) =>
       notesService.updateNote(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: notesKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: notesKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: notesKeys.detail(variables.id),
+      });
     },
   });
 }

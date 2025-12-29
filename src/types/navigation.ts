@@ -1,4 +1,4 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -7,11 +7,11 @@ export type AuthStackParamList = {
 
 export type AppStackParamList = {
   NotesList: undefined;
-  NoteEditor: { noteId?: string };
+  NoteEditor: { noteId?: string; title?: string };
 };
 
-export type AuthScreenProps<T extends keyof AuthStackParamList> = 
+export type AuthScreenProps<T extends keyof AuthStackParamList> =
   NativeStackScreenProps<AuthStackParamList, T>;
 
-export type AppScreenProps<T extends keyof AppStackParamList> = 
+export type AppScreenProps<T extends keyof AppStackParamList> =
   NativeStackScreenProps<AppStackParamList, T>;

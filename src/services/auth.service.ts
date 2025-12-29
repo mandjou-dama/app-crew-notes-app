@@ -1,5 +1,8 @@
-import { supabase } from './supabase';
-import { SignInWithPasswordCredentials, SignUpWithPasswordCredentials } from '@supabase/supabase-js';
+import { supabase } from "./supabase";
+import {
+  SignInWithPasswordCredentials,
+  SignUpWithPasswordCredentials,
+} from "@supabase/supabase-js";
 
 export const authService = {
   signIn: (credentials: SignInWithPasswordCredentials) => {
