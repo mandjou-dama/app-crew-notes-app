@@ -1,65 +1,127 @@
-# Starter Template with React Navigation
+# React Native Notes App (Supabase)
 
-This is a minimal starter template for React Native apps using Expo and React Navigation.
+## Project Overview
 
-It includes the following:
+This project is a React Native mobile application built as a technical assignment. It provides a secure, user-isolated note-taking environment where users can sign up, log in, manage their notes, and synchronize data with a Supabase backend.
 
-- Example [Native Stack](https://reactnavigation.org/docs/native-stack-navigator) with a nested [Bottom Tab](https://reactnavigation.org/docs/bottom-tab-navigator)
-- Web support with [React Native for Web](https://necolas.github.io/react-native-web/)
-- TypeScript support and configured for React Navigation
-- Automatic [deep link](https://reactnavigation.org/docs/deep-linking) and [URL handling configuration](https://reactnavigation.org/docs/configuring-links)
-- Theme support [based on system appearance](https://reactnavigation.org/docs/themes/#using-the-operating-system-preferences)
-- Expo [Development Build](https://docs.expo.dev/develop/development-builds/introduction/) with [Continuous Native Generation](https://docs.expo.dev/workflow/continuous-native-generation/)
+The application demonstrates production-grade architectural patterns, including strict type safety, separation of concerns (Auth/App stacks), secure authentication state management, and robust error handling. It focuses on correctness, security, and stability rather than visual styling.
 
-## Getting Started
+## Tech Stack
 
-1. Create a new project using this template:
+- **Framework**: React Native (Expo)
+- **Language**: TypeScript
+- **Backend / Auth**: Supabase
+- **Server State Management**: TanStack React Query
+- **Client State Management**: Zustand
+- **Storage**: react-native-mmkv (for secure session persistence)
+- **Navigation**: React Navigation (Native Stack)
+- **Input**: react-native-enriched, react-native-keyboard-controller
 
-   ```sh
-   npx create-expo-app@latest --template react-navigation/template
+## Project Setup
+
+### Prerequisites
+
+- Node.js (LTS recommended)
+- package manager (pnpm recommended)
+- iOS Simulator (Mac only) or Android Emulator / Device
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd app-crew-notes-app
    ```
 
-2. Edit the `app.json` file to configure the `name`, `slug`, `scheme` and bundle identifiers (`ios.bundleIdentifier` and `android.bundleIdentifier`) for your app.
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
 
-3. Edit the `src/App.tsx` file to start working on your app.
+3. Configure Environment Variables:
+   Create a `.env` file in the root directory:
+   ```
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=your-anon-key
+   ```
+   *Note: Never include service role keys in the client application.*
 
-## Running the app
+## Supabase Configuration
 
-- Install the dependencies:
+### Database Schema
 
-  ```sh
-  npm install
-  ```
+The application requires a `notes` table with the following schema:
 
-- Start the development server:
+- `id` (uuid, primary key)
+- `title` (text)
+- `content` (text)
+- `user_id` (uuid, references auth.users)
+- `created_at` (timestamptz)
+- `updated_at` (timestamptz)
 
-  ```sh
-  npm start
-  ```
+### Security (RLS)
 
-- Build and run iOS and Android development builds:
+Row Level Security (RLS) is enabled on the `notes` table. Access is strictly limited to the data owner.
 
-  ```sh
-  npm run ios
-  # or
-  npm run android
-  ```
+**Policies:**
+1.  **SELECT**: Users can only read rows where `auth.uid() = user_id`.
+2.  **INSERT**: Users can only insert rows where `auth.uid() = user_id`.
+3.  **UPDATE**: Users can only update rows where `auth.uid() = user_id`.
+4.  **DELETE**: Users can only delete rows where `auth.uid() = user_id`.
 
-- In the terminal running the development server, press `i` to open the iOS simulator, `a` to open the Android device or emulator, or `w` to open the web browser.
+No cross-user data access is possible at the database level.
 
-## Notes
+## Authentication Flow
 
-This project uses a [development build](https://docs.expo.dev/develop/development-builds/introduction/) and cannot be run with [Expo Go](https://expo.dev/go). To run the app with Expo Go, edit the `package.json` file, remove the `expo-dev-client` package and `--dev-client` flag from the `start` script.
+- **Method**: Email and Password (Supabase Auth).
+- **Persistence**: Sessions are persisted securely using `MMKV` via a custom Supabase storage adapter.
+- **State Management**: 
+  - `Zustand` mirrors the current auth state (Session/User) to drive UI logic.
+  - A singleton auth bucket (`auth.store.ts`) ensures the UI reflects the backend state instantly.
+  - The app determines the initial navigation stack (Auth vs App) using a hydration check to prevent login flicker.
 
-We highly recommend using the development builds for normal development and testing.
+## Notes CRUD Flow
 
-The `ios` and `android` folder are gitignored in the project by default as they are automatically generated during the build process ([Continuous Native Generation](https://docs.expo.dev/workflow/continuous-native-generation/)). This means that you should not edit these folders directly and use [config plugins](https://docs.expo.dev/config-plugins/) instead. However, if you need to edit these folders, you can remove them from the `.gitignore` file so that they are tracked by git.
+- **Create**: Uses `useCreateNote` mutation. Invalidates list cache on success.
+- **Read**: Uses `useNotes` query. Fetches data respecting RLS policies.
+- **Update**: Uses `useUpdateNote` mutation. Updates title and/or content.
+- **Delete**: Uses `useDeleteNote` mutation. Requires user confirmation.
 
-## Resources
+All data interactions occur directly with Supabase, secured by the anonymous key and user JWT tokens.
 
-- [React Navigation documentation](https://reactnavigation.org/)
-- [Expo documentation](https://docs.expo.dev/)
+## Offline Handling
 
----
+The application implements a "Graceful Offline" strategy:
+- **Safety**: The app does not crash if network requests fail.
+- **Feedback**: Specialized error UI indicates when notes cannot be loaded due to connectivity issues.
+- **Retry**: Users can manually retry failed queries via UI actions.
+- **Persistence**: Auth sessions survive app restarts even without network.
 
-Demo assets are from [lucide.dev](https://lucide.dev/)
+## Running the App
+
+1. Start the development server:
+   ```bash
+   pnpm start
+   ```
+
+2. Run on Android:
+   ```bash
+   pnpm android
+   ```
+
+3. Run on iOS:
+   ```bash
+   pnpm ios
+   ```
+
+## Assumptions & Trade-offs
+
+- **Minimal UI**: The visual design is intentionally minimal to prioritize architectural correctness and logic.
+- **No Local Note Caching**: The app relies on React Query's in-memory cache and Supabase as the source of truth. Robust offline *creation/editing* (queueing system) was out of scope for this iteration.
+- **Strict Separation**: Logic is strictly separated from UI components to ensure testability and maintainability.
+
+## Security Notes
+
+- **RLS Enforced**: Security is not handled by the frontend filters; it is enforced by potential database policies.
+- **No Service Keys**: The client only contains the `SUPABASE_ANON_KEY`.
+- **User Isolation**: Notes are strictly isolated by `user_id`.
