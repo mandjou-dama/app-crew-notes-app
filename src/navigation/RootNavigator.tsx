@@ -8,7 +8,8 @@ import { enableScreens } from 'react-native-screens';
 enableScreens();
 
 export function RootNavigator() {
-  const { isAuthenticated } = useAuthStore();
+  const { session } = useAuthStore();
+  const isAuthenticated = !!session;
 
   return (
     <NavigationContainer>

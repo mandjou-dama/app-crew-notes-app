@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RootNavigator } from '@/navigation/RootNavigator';
+import { useAuth } from '@/hooks/use-auth';
+import { View, ActivityIndicator } from 'react-native';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,12 +15,25 @@ const queryClient = new QueryClient({
   },
 });
 
+function AppContent() {
+  const { isHydrated } = useAuth();
+
+  if (!isHydrated) {
+    // Minimal boot splash or null
+    return (
+        <View style={{ flex: 1, backgroundColor: '#fff' }} />
+    );
+  }
+
+  return <RootNavigator />;
+}
+
 export function App() {
   return (
     <SafeAreaProvider>
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>
-          <RootNavigator />
+          <AppContent />
         </QueryClientProvider>
       </KeyboardProvider>
     </SafeAreaProvider>

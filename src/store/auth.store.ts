@@ -1,13 +1,30 @@
 import { create } from 'zustand';
+import { Session, User } from '@/types/auth';
 
 interface AuthState {
-  session: any | null;
-  isAuthenticated: boolean;
-  setSession: (session: any | null) => void;
+  user: User | null;
+  session: Session | null;
+  isHydrated: boolean;
+  
+  setAuth: (session: Session | null) => void;
+  clearAuth: () => void;
+  setHydrated: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
   session: null,
-  isAuthenticated: false,
-  setSession: (session) => set({ session, isAuthenticated: !!session }),
+  isHydrated: false,
+
+  setAuth: (session) => set({ 
+    session, 
+    user: session ? session.user : null,
+  }),
+  
+  clearAuth: () => set({ 
+    session: null, 
+    user: null,
+  }),
+  
+  setHydrated: () => set({ isHydrated: true }),
 }));
