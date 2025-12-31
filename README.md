@@ -28,12 +28,14 @@ The application demonstrates production-grade architectural patterns, including 
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd app-crew-notes-app
    ```
 
 2. Install dependencies:
+
    ```bash
    pnpm install
    ```
@@ -44,7 +46,7 @@ The application demonstrates production-grade architectural patterns, including 
    SUPABASE_URL=https://your-project.supabase.co
    SUPABASE_ANON_KEY=your-anon-key
    ```
-   *Note: Never include service role keys in the client application.*
+   _Note: Never include service role keys in the client application._
 
 ## Supabase Configuration
 
@@ -64,6 +66,7 @@ The application requires a `notes` table with the following schema:
 Row Level Security (RLS) is enabled on the `notes` table. Access is strictly limited to the data owner.
 
 **Policies:**
+
 1.  **SELECT**: Users can only read rows where `auth.uid() = user_id`.
 2.  **INSERT**: Users can only insert rows where `auth.uid() = user_id`.
 3.  **UPDATE**: Users can only update rows where `auth.uid() = user_id`.
@@ -75,7 +78,7 @@ No cross-user data access is possible at the database level.
 
 - **Method**: Email and Password (Supabase Auth).
 - **Persistence**: Sessions are persisted securely using `MMKV` via a custom Supabase storage adapter.
-- **State Management**: 
+- **State Management**:
   - `Zustand` mirrors the current auth state (Session/User) to drive UI logic.
   - A singleton auth bucket (`auth.store.ts`) ensures the UI reflects the backend state instantly.
   - The app determines the initial navigation stack (Auth vs App) using a hydration check to prevent login flicker.
@@ -92,19 +95,27 @@ All data interactions occur directly with Supabase, secured by the anonymous key
 ## Offline Handling
 
 The application implements a "Graceful Offline" strategy:
+
 - **Safety**: The app does not crash if network requests fail.
 - **Feedback**: Specialized error UI indicates when notes cannot be loaded due to connectivity issues.
 - **Retry**: Users can manually retry failed queries via UI actions.
 - **Persistence**: Auth sessions survive app restarts even without network.
 
+## Search Functionality
+
+- Client-side search filters notes by title/content.
+- Case-insensitive and real-time as the user types.
+
 ## Running the App
 
 1. Start the development server:
+
    ```bash
    pnpm start
    ```
 
 2. Run on Android:
+
    ```bash
    pnpm android
    ```
@@ -117,7 +128,7 @@ The application implements a "Graceful Offline" strategy:
 ## Assumptions & Trade-offs
 
 - **Minimal UI**: The visual design is intentionally minimal to prioritize architectural correctness and logic.
-- **No Local Note Caching**: The app relies on React Query's in-memory cache and Supabase as the source of truth. Robust offline *creation/editing* (queueing system) was out of scope for this iteration.
+- **No Local Note Caching**: The app relies on React Query's in-memory cache and Supabase as the source of truth. Robust offline _creation/editing_ (queueing system) was out of scope for this iteration.
 - **Strict Separation**: Logic is strictly separated from UI components to ensure testability and maintainability.
 
 ## Security Notes

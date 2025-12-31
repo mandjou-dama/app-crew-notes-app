@@ -44,7 +44,7 @@ export function SignupScreen() {
     }
 
     if (password !== confirmPassword) {
-      setError("Passords need to be the same.");
+      setError("Passwords need to be the same.");
       return;
     }
 
@@ -111,7 +111,7 @@ export function SignupScreen() {
                 <View
                   style={[
                     styles.inputContainer,
-                    { justifyContent: "space-between" },
+                    { justifyContent: "space-between", flexDirection: "row" },
                   ]}
                 >
                   <View
@@ -143,8 +143,6 @@ export function SignupScreen() {
                       <EyeClosed size={18} />
                     )}
                   </Pressable>
-
-                  {error && <Text style={styles.errorText}>{error}</Text>}
                 </View>
 
                 <View
@@ -184,9 +182,8 @@ export function SignupScreen() {
                       <EyeClosed size={18} />
                     )}
                   </Pressable>
-
-                  {error && <Text style={styles.errorText}>{error}</Text>}
                 </View>
+                {error && <Text style={styles.errorText}>{error}</Text>}
               </View>
             </View>
 

@@ -17,6 +17,7 @@ import { EnrichedTextInput } from "react-native-enriched";
 
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -43,6 +44,8 @@ export function NotesListScreen() {
   const deleteAllNotesMutation = useDeleteAllNotes();
   const { data: searchNotesData, isLoading: isSearchLoading } =
     searchNotes(searchQuery);
+
+  const netInfo = useNetInfo();
 
   useFocusEffect(
     useCallback(() => {
@@ -122,6 +125,7 @@ export function NotesListScreen() {
           </Text>
 
           <Pressable
+            disabled={!netInfo.isConnected}
             style={{
               width: 35,
               height: 35,
@@ -130,6 +134,7 @@ export function NotesListScreen() {
               backgroundColor: COLORS.background,
               borderRadius: 8,
               borderCurve: "continuous",
+              opacity: !netInfo.isConnected ? 0.5 : 1,
             }}
             onPress={() => handleDelete(item.id)}
           >
@@ -171,7 +176,7 @@ export function NotesListScreen() {
 
         <View style={{ flexDirection: "row", gap: SPACES.m }}>
           <Pressable
-            disabled={notes?.length === 0}
+            disabled={notes?.length === 0 || !netInfo.isConnected}
             style={{
               backgroundColor: COLORS.white,
               width: 46,
@@ -180,13 +185,14 @@ export function NotesListScreen() {
               justifyContent: "center",
               alignItems: "center",
               borderCurve: "continuous",
-              opacity: notes?.length === 0 ? 0.5 : 1,
+              opacity: notes?.length === 0 || !netInfo.isConnected ? 0.5 : 1,
             }}
             onPress={handleDeleteAll}
           >
             <Trash2Icon size={24} color={COLORS.black} />
           </Pressable>
           <Pressable
+            disabled={!netInfo.isConnected}
             style={{
               backgroundColor: COLORS.white,
               width: 46,
@@ -195,6 +201,7 @@ export function NotesListScreen() {
               justifyContent: "center",
               alignItems: "center",
               borderCurve: "continuous",
+              opacity: !netInfo.isConnected ? 0.5 : 1,
             }}
             onPress={handleLogout}
           >
@@ -219,7 +226,7 @@ export function NotesListScreen() {
         </View>
       )}
 
-      {!isLoadingNotes && displayedNotes?.length === 0 && (
+      {!isLoadingNotes && displayedNotes?.length === 0 && !error && (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>
             No notes found. Create a new note!
@@ -242,7 +249,7 @@ export function NotesListScreen() {
         </View>
       )}
 
-      {!isLoadingNotes && displayedNotes?.length! > 0 && (
+      {!isLoadingNotes && displayedNotes?.length! > 0 && !error && (
         <FlashList
           data={displayedNotes}
           renderItem={renderItem}
@@ -255,8 +262,13 @@ export function NotesListScreen() {
       )}
 
       <TouchableOpacity
-        style={styles.fab}
-        onPress={() => navigation.navigate("NoteEditor", {})}
+        style={[styles.fab, { opacity: netInfo.isConnected ? 1 : 0.5 }]}
+        disabled={!netInfo.isConnected}
+        onPress={() => {
+          if (netInfo.isConnected) {
+            navigation.navigate("NoteEditor", { title: "New Note" });
+          }
+        }}
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
