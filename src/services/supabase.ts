@@ -1,8 +1,11 @@
 import "react-native-url-polyfill/auto";
-import { createClient } from "@supabase/supabase-js";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@env";
-import * as SessionStorage from "./storage";
+
 import { AppState } from "react-native";
+
+import { createClient } from "@supabase/supabase-js";
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@env";
+
+import * as SessionStorage from "./storage";
 
 // Better to throw early if env vars are missing
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {

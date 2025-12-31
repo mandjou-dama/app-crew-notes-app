@@ -1,29 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { AppStackParamList } from "@/types/navigation";
-import {
-  useNotes,
-  useCreateNote,
-  useUpdateNote,
-  useGetNoteById,
-} from "@/api/notes.queries";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import {
   EnrichedTextInput,
   EnrichedTextInputInstance,
@@ -33,11 +22,19 @@ import {
   OnChangeTextEvent,
   OnLinkDetected,
 } from "react-native-enriched";
-import { ArrowLeftFromLine, ArrowLeftIcon, Check } from "lucide-react-native";
+import { ArrowLeftIcon, Check } from "lucide-react-native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+import { AppStackParamList } from "@/types/navigation";
+import {
+  useCreateNote,
+  useGetNoteById,
+  useUpdateNote,
+} from "@/api/notes.queries";
 import { COLORS, SPACES } from "@/constant";
-import { KeyboardToolbar } from "react-native-keyboard-controller";
-import { Toolbar } from "@/components/Toolbar";
 import { LinkModal } from "@/components/LinkModal";
+import { Toolbar } from "@/components/Toolbar";
 
 type NavigationProp = NativeStackNavigationProp<
   AppStackParamList,

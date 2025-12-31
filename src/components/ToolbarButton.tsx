@@ -1,6 +1,8 @@
 import { type FC } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
+
 import { LucideIcon } from "lucide-react-native";
+
 import { COLORS } from "@/constant";
 
 interface ToolbarButtonIconProps {

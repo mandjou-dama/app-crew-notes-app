@@ -1,27 +1,25 @@
 import React, { useState } from "react";
 import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
   StyleSheet,
   Text,
-  View,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  Platform,
-  KeyboardAvoidingView,
   TouchableWithoutFeedback,
-  Pressable,
+  View,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { Eye, EyeClosed, Lock, Mailbox } from "lucide-react-native";
+import { KeyboardController } from "react-native-keyboard-controller";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
 import { AuthStackParamList } from "@/types/navigation";
-import { authService } from "@/services/auth.service";
-import { KeyboardController } from "react-native-keyboard-controller";
-import { Eye, EyeClosed, Lock, Mailbox } from "lucide-react-native";
 import { COLORS, SPACES } from "@/constant";
+import { authService } from "@/services/auth.service";
 import Button from "@/components/Button";
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Signup">;
@@ -57,18 +55,13 @@ export function SignupScreen() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: "http://localhost:3000/auth/callback",
+          // emailRedirectTo: "http://localhost:3000/auth/callback",
         },
       });
 
       if (error) {
         setError(error.message);
       }
-
-      // On success, typically Supabase signs in automatically or sends email.
-      // If email confirmation is off, the listener will catch the session.
-      // If on, we might need to tell user to check email.
-      // For now, we assume simple flow or listener handles it.
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred");
     } finally {

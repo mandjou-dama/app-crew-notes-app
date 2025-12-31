@@ -1,15 +1,16 @@
-import { LucideIcon } from "lucide-react-native";
 import React, { memo } from "react";
 import {
-  Text,
-  StyleSheet,
+  GestureResponderEvent,
   Pressable,
   PressableProps,
-  GestureResponderEvent,
+  StyleSheet,
+  Text,
 } from "react-native";
-import { Spinner } from "./Spinner";
-import { useHaptics } from "@/hooks/use-haptics";
+import { LucideIcon } from "lucide-react-native";
+
 import { COLORS, SPACES } from "@/constant";
+import { useHaptics } from "@/hooks/use-haptics";
+import { Spinner } from "./Spinner";
 
 interface Props extends PressableProps {
   title: string;

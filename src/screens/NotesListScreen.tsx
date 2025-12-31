@@ -1,32 +1,35 @@
 import React, { useCallback, useState } from "react";
+
 import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
   StyleSheet,
   Text,
-  View,
-  FlatList,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  Pressable,
   TextInput,
-  Modal,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
+import { FlashList } from "@shopify/flash-list";
+import { LogOut, Minus, Search, Trash2Icon } from "lucide-react-native";
+import { EnrichedTextInput } from "react-native-enriched";
+
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { AppStackParamList } from "@/types/navigation";
+
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import {
-  useNotes,
-  useDeleteNote,
   useDeleteAllNotes,
+  useDeleteNote,
+  useNotes,
   searchNotes,
 } from "@/api/notes.queries";
-import { Note } from "@/types/note";
-import { authService } from "@/services/auth.service";
-import { LogOut, Minus, Search, Trash2Icon } from "lucide-react-native";
 import { COLORS, SPACES } from "@/constant";
-import { EnrichedTextInput } from "react-native-enriched";
-import { FlashList } from "@shopify/flash-list";
+import { authService } from "@/services/auth.service";
+import { Note } from "@/types/note";
+import { AppStackParamList } from "@/types/navigation";
 
 type NavigationProp = NativeStackNavigationProp<AppStackParamList, "NotesList">;
 

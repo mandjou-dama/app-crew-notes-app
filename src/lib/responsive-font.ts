@@ -1,4 +1,4 @@
-import { Dimensions, PixelRatio, StyleSheet } from "react-native";
+import { Dimensions, PixelRatio } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 

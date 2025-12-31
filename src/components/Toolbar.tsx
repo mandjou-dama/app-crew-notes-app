@@ -1,25 +1,26 @@
+import { type FC } from "react";
+
 import { FlatList, type ListRenderItemInfo, StyleSheet } from "react-native";
-import { ToolbarButton } from "./ToolbarButton";
-import type {
-  OnChangeStateEvent,
-  EnrichedTextInputInstance,
-} from "react-native-enriched";
-import type { FC } from "react";
+
 import {
   Bold,
-  Italic,
-  Underline,
-  Strikethrough,
   Code,
-  Quote,
-  Image,
+  FileCode,
+  Italic,
   Link,
-  AtSign,
   List,
   ListOrdered,
-  FileCode,
+  Quote,
+  Strikethrough,
+  Underline,
 } from "lucide-react-native";
+import type {
+  EnrichedTextInputInstance,
+  OnChangeStateEvent,
+} from "react-native-enriched";
+
 import { COLORS } from "@/constant";
+import { ToolbarButton } from "./ToolbarButton";
 
 const STYLE_ITEMS = [
   { name: "bold", icon: Bold },

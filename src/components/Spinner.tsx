@@ -1,4 +1,3 @@
-import { COLORS } from "@/constant";
 import React, { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
@@ -9,15 +8,14 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { COLORS } from "@/constant";
+
 interface SpinnerProps {
   size?: number;
   color?: string;
 }
 
-export const Spinner = ({
-  size = 20,
-  color = COLORS.primary,
-}: SpinnerProps) => {
+export const Spinner = ({ size = 20, color = COLORS.white }: SpinnerProps) => {
   const rotation = useSharedValue(0);
 
   useEffect(() => {

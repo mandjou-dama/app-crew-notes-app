@@ -1,9 +1,9 @@
 import { type FC, useEffect, useState } from "react";
-import { Modal, Pressable, StyleSheet, TextInput, View } from "react-native";
+
+import { Modal, StyleSheet, TextInput, View } from "react-native";
+
+import { SPACES } from "@/constant";
 import Button from "./Button";
-import { Icon } from "./Icon";
-import { XIcon } from "lucide-react-native";
-import { COLORS, SPACES } from "@/constant";
 
 interface LinkModalProps {
   isOpen: boolean;

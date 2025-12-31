@@ -1,37 +1,27 @@
 import React, { useState } from "react";
 import {
+  Platform,
+  Pressable,
   StyleSheet,
   Text,
-  View,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  Platform,
-  TouchableNativeFeedbackBase,
-  Keyboard,
   TouchableWithoutFeedback,
-  Pressable,
+  View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { Eye, EyeClosed, Lock, Mailbox } from "lucide-react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+  KeyboardAvoidingView,
+  KeyboardController,
+} from "react-native-keyboard-controller";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
 import { AuthStackParamList } from "@/types/navigation";
-import { authService } from "@/services/auth.service";
 import { COLORS, SPACES } from "@/constant";
-import {
-  KeyboardController,
-  KeyboardAvoidingView,
-} from "react-native-keyboard-controller";
-import {
-  ArrowLeftFromLine,
-  Eye,
-  EyeClosed,
-  Lock,
-  Mailbox,
-} from "lucide-react-native";
+import { authService } from "@/services/auth.service";
 import Button from "@/components/Button";
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
