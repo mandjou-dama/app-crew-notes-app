@@ -1,7 +1,8 @@
 export const notesKeys = {
-  all: ['notes'] as const,
-  lists: () => [...notesKeys.all, 'list'] as const,
+  all: ["notes"] as const,
+  lists: () => [...notesKeys.all, "list"] as const,
   list: (filters?: string) => [...notesKeys.lists(), { filters }] as const,
-  details: () => [...notesKeys.all, 'detail'] as const,
+  details: () => [...notesKeys.all, "detail"] as const,
   detail: (id: string) => [...notesKeys.details(), id] as const,
+  search: (query: string) => [...notesKeys.all, "search", query] as const,
 };

@@ -28,6 +28,21 @@ export const useGetNoteById = (noteId: string) => {
   });
 };
 
+export function searchNotes(query: string) {
+  return useQuery({
+    queryKey: notesKeys.search(query),
+    queryFn: async () => {
+      const allNotes = await notesService.getNotes();
+      return allNotes.filter(
+        (note) =>
+          note.title.toLowerCase().includes(query.toLowerCase()) ||
+          note.content.toLowerCase().includes(query.toLowerCase())
+      );
+    },
+    enabled: query.length > 0,
+  });
+}
+
 export function useUpdateNote() {
   const queryClient = useQueryClient();
 
@@ -48,6 +63,17 @@ export function useDeleteNote() {
 
   return useMutation({
     mutationFn: (id: string) => notesService.deleteNote(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notesKeys.lists() });
+    },
+  });
+}
+
+export function useDeleteAllNotes() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => notesService.deleteAllNotes(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: notesKeys.lists() });
     },

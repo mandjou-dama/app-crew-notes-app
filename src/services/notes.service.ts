@@ -114,4 +114,22 @@ export const notesService = {
 
     if (error) throw new Error(error.message);
   },
+
+  deleteAllNotes: async (): Promise<void> => {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      throw new Error("User not authenticated");
+    }
+
+    const { error } = await supabase
+      .from("notes")
+      .delete()
+      .eq("user_id", user.id);
+
+    if (error) throw new Error(error.message);
+  },
 };

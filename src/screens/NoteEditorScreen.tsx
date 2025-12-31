@@ -242,7 +242,11 @@ export function NoteEditorScreen() {
         style={styles.keyboardView}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          keyboardDismissMode="on-drag"
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scrollContent}
+        >
           <TextInput
             style={styles.titleInput}
             placeholder="Title"

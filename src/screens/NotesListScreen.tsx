@@ -1,4 +1,4 @@
-import React, { use, useCallback, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,15 +9,21 @@ import {
   ActivityIndicator,
   Pressable,
   TextInput,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { AppStackParamList } from "@/types/navigation";
-import { useNotes, useDeleteNote } from "@/api/notes.queries";
+import {
+  useNotes,
+  useDeleteNote,
+  useDeleteAllNotes,
+  searchNotes,
+} from "@/api/notes.queries";
 import { Note } from "@/types/note";
 import { authService } from "@/services/auth.service";
-import { Ellipsis, EllipsisVertical, Minus, Search } from "lucide-react-native";
+import { LogOut, Minus, Search, Trash2Icon } from "lucide-react-native";
 import { COLORS, SPACES } from "@/constant";
 import { EnrichedTextInput } from "react-native-enriched";
 import { FlashList } from "@shopify/flash-list";
@@ -25,18 +31,34 @@ import { FlashList } from "@shopify/flash-list";
 type NavigationProp = NativeStackNavigationProp<AppStackParamList, "NotesList">;
 
 export function NotesListScreen() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchActive, setIsSearchActive] = useState(false);
+
   const navigation = useNavigation<NavigationProp>();
   const { data: notes, isLoading, isError, error, refetch } = useNotes();
   const deleteNoteMutation = useDeleteNote();
+  const deleteAllNotesMutation = useDeleteAllNotes();
+  const { data: searchNotesData, isLoading: isSearchLoading } =
+    searchNotes(searchQuery);
 
   useFocusEffect(
     useCallback(() => {
       refetch();
+      console.log("refetch");
     }, [refetch])
   );
 
   const handleLogout = async () => {
-    await authService.signOut();
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await authService.signOut();
+        },
+      },
+    ]);
   };
 
   const handleDelete = (id: string) => {
@@ -50,6 +72,30 @@ export function NotesListScreen() {
     ]);
   };
 
+  const handleDeleteAll = () => {
+    Alert.alert(
+      "Delete All Notes",
+      "Are you sure you want to delete all notes?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete All",
+          style: "destructive",
+          onPress: () => deleteAllNotesMutation.mutate(),
+        },
+      ]
+    );
+  };
+
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+    setIsSearchActive(text.length > 0);
+  };
+
+  const isLoadingNotes = isLoading || isSearchLoading;
+  const errorMessage = isError ? (error as Error).message : null;
+  const displayedNotes = isSearchActive ? searchNotesData || [] : notes || [];
+
   const renderItem = ({ item }: { item: Note }) => (
     <TouchableOpacity
       style={styles.card}
@@ -61,21 +107,30 @@ export function NotesListScreen() {
       }
     >
       <View style={styles.cardContent}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            gap: 8,
+          }}
+        >
           <Text style={styles.cardTitle} numberOfLines={2}>
             {item.title}
           </Text>
 
           <Pressable
             style={{
-              width: 30,
-              height: 30,
+              width: 35,
+              height: 35,
               justifyContent: "center",
               alignItems: "center",
-              marginTop: 5,
+              backgroundColor: COLORS.background,
+              borderRadius: 8,
+              borderCurve: "continuous",
             }}
+            onPress={() => handleDelete(item.id)}
           >
-            <EllipsisVertical size={24} color={COLORS.black} />
+            <Trash2Icon size={18} color={COLORS.black} />
           </Pressable>
         </View>
 
@@ -103,74 +158,98 @@ export function NotesListScreen() {
           {new Date(item.updated_at).toLocaleDateString()}
         </Text>
       </View>
-      {/* <TouchableOpacity
-        onPress={() => handleDelete(item.id)}
-        style={styles.deleteButton}
-      >
-        <Text style={styles.deleteText}>Delete</Text>
-      </TouchableOpacity> */}
     </TouchableOpacity>
   );
-
-  if (isLoading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#000" />
-      </View>
-    );
-  }
-
-  if (isError) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>Unable to load notes.</Text>
-        <Text style={styles.errorSubtext}>
-          Check your connection and try again.
-        </Text>
-        <TouchableOpacity onPress={() => refetch()} style={styles.retryButton}>
-          <Text style={styles.retryText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Notes</Text>
 
-        <Pressable
-          style={{
-            backgroundColor: COLORS.white,
-            width: 46,
-            height: 46,
-            borderRadius: 16,
-            justifyContent: "center",
-            alignItems: "center",
-            borderCurve: "continuous",
-          }}
-        >
-          <Ellipsis size={24} color={COLORS.black} />
-        </Pressable>
-        {/* <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity> */}
+        <View style={{ flexDirection: "row", gap: SPACES.m }}>
+          <Pressable
+            disabled={notes?.length === 0}
+            style={{
+              backgroundColor: COLORS.white,
+              width: 46,
+              height: 46,
+              borderRadius: 16,
+              justifyContent: "center",
+              alignItems: "center",
+              borderCurve: "continuous",
+              opacity: notes?.length === 0 ? 0.5 : 1,
+            }}
+            onPress={handleDeleteAll}
+          >
+            <Trash2Icon size={24} color={COLORS.black} />
+          </Pressable>
+          <Pressable
+            style={{
+              backgroundColor: COLORS.white,
+              width: 46,
+              height: 46,
+              borderRadius: 16,
+              justifyContent: "center",
+              alignItems: "center",
+              borderCurve: "continuous",
+            }}
+            onPress={handleLogout}
+          >
+            <LogOut size={24} color={COLORS.black} />
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.searchContainer}>
         <Search size={24} color={COLORS.black} />
-        <TextInput placeholder="Search notes..." style={styles.searchInput} />
+        <TextInput
+          value={searchQuery}
+          onChangeText={handleSearchChange}
+          placeholder="Search notes..."
+          style={styles.searchInput}
+        />
       </View>
 
-      <FlashList
-        data={notes}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        masonry
-        numColumns={2}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+      {isLoadingNotes && (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={COLORS.black} />
+        </View>
+      )}
+
+      {!isLoadingNotes && displayedNotes?.length === 0 && (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>
+            No notes found. Create a new note!
+          </Text>
+        </View>
+      )}
+
+      {error && (
+        <View style={styles.centerContainer}>
+          <Text style={styles.errorText}>Unable to load notes.</Text>
+          <Text style={styles.errorSubtext}>
+            Check your connection and try again.
+          </Text>
+          <TouchableOpacity
+            onPress={() => refetch()}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {!isLoadingNotes && displayedNotes?.length! > 0 && (
+        <FlashList
+          data={displayedNotes}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          masonry
+          numColumns={2}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
       <TouchableOpacity
         style={styles.fab}
@@ -230,17 +309,18 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS.white,
-    marginBottom: 16,
+    // marginBottom: 16,
+    margin: 6,
     borderRadius: 13,
     paddingVertical: SPACES.l,
     paddingLeft: SPACES.l - 5,
     paddingRight: SPACES.l,
     borderCurve: "continuous",
-    marginRight: SPACES.m,
+    // marginRight: SPACES.m,
   },
   cardContent: {
     flex: 1,
-    marginRight: 10,
+    // marginRight: 10,
   },
   cardTitle: {
     fontSize: 22,
@@ -249,6 +329,7 @@ const styles = StyleSheet.create({
     color: "#333",
     paddingTop: 0,
     marginTop: 0,
+    width: "75%",
   },
   cardDate: {
     fontSize: 12,
