@@ -25,6 +25,7 @@ import {
 import { ArrowLeftIcon, Check } from "lucide-react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 import { AppStackParamList } from "@/types/navigation";
 import {
@@ -98,6 +99,7 @@ export function NoteEditorScreen() {
   const [selection, setSelection] = useState<Selection>();
   const [error, setError] = useState<string | null>(null);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const netInfo = useNetInfo();
 
   // Hydrate form if editing
   useEffect(() => {
@@ -105,8 +107,6 @@ export function NoteEditorScreen() {
       if (note) {
         setTitle(note.title);
         setCurrentHtml(note.content || "");
-
-        console.log(note.content);
       } else {
         // Handle case where note is not found (unlikely but possible)
         Alert.alert("Error", "Note not found");
@@ -223,8 +223,12 @@ export function NoteEditorScreen() {
         </Text>
         <TouchableOpacity
           onPress={handleSave}
-          disabled={isLoading}
-          style={[styles.saveButton, isLoading && styles.disabledButton]}
+          disabled={isLoading || !netInfo.isConnected}
+          style={[
+            styles.saveButton,
+            isLoading && styles.disabledButton,
+            !netInfo.isConnected && styles.disabledButton,
+          ]}
         >
           {isLoading ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -327,7 +331,6 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
-    color: "#007AFF",
   },
   saveButton: {
     backgroundColor: COLORS.black,
@@ -339,7 +342,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   saveButtonText: {
-    color: "#fff",
+    color: COLORS.white,
     fontWeight: "bold",
     fontSize: 14,
   },
