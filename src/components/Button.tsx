@@ -15,6 +15,7 @@ interface Props extends PressableProps {
   title: string;
   icon?: LucideIcon;
   isLoading?: boolean;
+  isLight?: boolean;
 }
 
 const Button = ({
@@ -23,6 +24,7 @@ const Button = ({
   onPress,
   disabled = true,
   isLoading,
+  isLight = false,
 }: Props) => {
   const { impact } = useHaptics();
 
@@ -35,10 +37,16 @@ const Button = ({
     <Pressable
       onPress={handlePress}
       disabled={disabled}
-      style={[styles.container, disabled && styles.disabled]}
+      style={[
+        styles.container,
+        disabled && styles.disabled,
+        isLight && styles.light,
+      ]}
     >
       {isLoading && <Spinner color={COLORS.white} size={18} />}
-      <Text style={styles.text}>{isLoading ? "Loading..." : title}</Text>
+      <Text style={[styles.text, isLight && styles.lightText]}>
+        {isLoading ? "Loading..." : title}
+      </Text>
       {Icon && <Icon size={18} color={COLORS.white} strokeWidth={2} />}
     </Pressable>
   );
@@ -55,9 +63,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: SPACES.x,
   },
+  light: {
+    backgroundColor: COLORS.background,
+  },
   text: {
     color: COLORS.background,
     fontSize: 16,
+  },
+  lightText: {
+    color: COLORS.black,
   },
   disabled: {
     opacity: 0.6,

@@ -8,25 +8,45 @@ import {
   ActivityIndicator,
   Platform,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Pressable,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "@/types/navigation";
 import { authService } from "@/services/auth.service";
+import { KeyboardController } from "react-native-keyboard-controller";
+import { Eye, EyeClosed, Lock, Mailbox } from "lucide-react-native";
+import { COLORS, SPACES } from "@/constant";
+import Button from "@/components/Button";
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Signup">;
 
 export function SignupScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const insets = useSafeAreaInsets();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [ConfirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignup = async () => {
     if (!email.trim() || !password) {
       setError("Please enter both email and password.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passords need to be the same.");
       return;
     }
 
@@ -44,6 +64,7 @@ export function SignupScreen() {
       if (error) {
         setError(error.message);
       }
+
       // On success, typically Supabase signs in automatically or sends email.
       // If email confirmation is off, the listener will catch the session.
       // If on, we might need to tell user to check email.
@@ -52,130 +73,223 @@ export function SignupScreen() {
       setError(err.message || "An unexpected error occurred");
     } finally {
       setLoading(false);
+      setError("");
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top + 50, paddingBottom: insets.bottom },
+      ]}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={20}
         style={styles.keyboardView}
       >
-        <View style={styles.content}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to get started</Text>
-
-          <View style={styles.form}>
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#666"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor="#666"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-
-            {error && <Text style={styles.errorText}>{error}</Text>}
-
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleSignup}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Sign Up</Text>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Login")}
-              style={styles.linkButton}
-            >
-              <Text style={styles.linkText}>
-                Already have an account? Log In
+        <TouchableWithoutFeedback
+          onPress={() => KeyboardController.dismiss()}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.content}>
+            <View>
+              <Text style={styles.title}>Create Account to get started</Text>
+              <Text style={styles.subtitle}>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat
+                sapiente aperiam quo exercitationem.
               </Text>
-            </TouchableOpacity>
+
+              <View style={styles.form}>
+                <View style={styles.inputContainer}>
+                  <Mailbox color={COLORS.black} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your email"
+                    placeholderTextColor="#666"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                  />
+                </View>
+
+                <View
+                  style={[
+                    styles.inputContainer,
+                    { justifyContent: "space-between" },
+                  ]}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <Lock color={COLORS.black} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your password"
+                      placeholderTextColor="#666"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={!passwordVisible}
+                    />
+                  </View>
+
+                  <Pressable
+                    hitSlop={10}
+                    onPress={() => setPasswordVisible(!passwordVisible)}
+                    style={{ opacity: 0.4 }}
+                  >
+                    {passwordVisible ? (
+                      <Eye size={18} />
+                    ) : (
+                      <EyeClosed size={18} />
+                    )}
+                  </Pressable>
+
+                  {error && <Text style={styles.errorText}>{error}</Text>}
+                </View>
+
+                <View
+                  style={[
+                    styles.inputContainer,
+                    { justifyContent: "space-between" },
+                  ]}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <Lock color={COLORS.black} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Confirm your password"
+                      placeholderTextColor="#666"
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry={!ConfirmPasswordVisible}
+                    />
+                  </View>
+
+                  <Pressable
+                    hitSlop={10}
+                    onPress={() =>
+                      setConfirmPasswordVisible(!ConfirmPasswordVisible)
+                    }
+                    style={{ opacity: 0.4 }}
+                  >
+                    {ConfirmPasswordVisible ? (
+                      <Eye size={18} />
+                    ) : (
+                      <EyeClosed size={18} />
+                    )}
+                  </Pressable>
+
+                  {error && <Text style={styles.errorText}>{error}</Text>}
+                </View>
+              </View>
+            </View>
+
+            <View>
+              <Button
+                title="Sign Up"
+                onPress={handleSignup}
+                isLoading={loading}
+                disabled={
+                  email.length < 5
+                    ? true
+                    : false || password.length < 8
+                    ? true
+                    : false || confirmPassword.length < 8
+                    ? true
+                    : false || loading
+                }
+              />
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Login")}
+                style={styles.linkButton}
+              >
+                <Text style={styles.linkText}>
+                  Already have an account? Log In
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFE3",
+    backgroundColor: COLORS.background,
   },
   keyboardView: {
     flex: 1,
   },
   content: {
     flex: 1,
-    justifyContent: "center",
-    padding: 24,
+    justifyContent: "space-between",
+    paddingHorizontal: SPACES.l,
   },
   title: {
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 8,
-    color: "#000",
+    color: COLORS.black,
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: COLORS.black,
     marginBottom: 32,
+    opacity: 0.6,
   },
   form: {
     gap: 16,
   },
-  input: {
+  inputContainer: {
     height: 50,
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
+    borderColor: "#c7c7c7",
+    borderRadius: 13,
     paddingHorizontal: 16,
+    backgroundColor: COLORS.background,
+    flexDirection: "row",
+    borderCurve: "continuous",
+    alignItems: "center",
+    gap: 8,
+  },
+  input: {
     fontSize: 16,
-    backgroundColor: "#fafafa",
+    flex: 0.8,
   },
   errorText: {
     color: "red",
     fontSize: 14,
   },
-  button: {
-    height: 50,
-    backgroundColor: "#000",
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 8,
-  },
   buttonDisabled: {
     opacity: 0.7,
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+  forgetPassword: {
+    marginTop: 0,
   },
   linkButton: {
     alignItems: "center",
-    marginTop: 16,
+    marginTop: 10,
+    marginBottom: 10,
   },
   linkText: {
-    color: "#000",
+    color: COLORS.black,
     fontSize: 14,
     textDecorationLine: "underline",
   },

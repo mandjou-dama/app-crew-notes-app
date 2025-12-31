@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use, useCallback, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,14 +7,20 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Pressable,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { AppStackParamList } from "@/types/navigation";
 import { useNotes, useDeleteNote } from "@/api/notes.queries";
 import { Note } from "@/types/note";
 import { authService } from "@/services/auth.service";
+import { Ellipsis, EllipsisVertical, Minus, Search } from "lucide-react-native";
+import { COLORS, SPACES } from "@/constant";
+import { EnrichedTextInput } from "react-native-enriched";
+import { FlashList } from "@shopify/flash-list";
 
 type NavigationProp = NativeStackNavigationProp<AppStackParamList, "NotesList">;
 
@@ -22,6 +28,12 @@ export function NotesListScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { data: notes, isLoading, isError, error, refetch } = useNotes();
   const deleteNoteMutation = useDeleteNote();
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const handleLogout = async () => {
     await authService.signOut();
@@ -49,19 +61,54 @@ export function NotesListScreen() {
       }
     >
       <View style={styles.cardContent}>
-        <Text style={styles.cardTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <Text style={styles.cardTitle} numberOfLines={2}>
+            {item.title}
+          </Text>
+
+          <Pressable
+            style={{
+              width: 30,
+              height: 30,
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: 5,
+            }}
+          >
+            <EllipsisVertical size={24} color={COLORS.black} />
+          </Pressable>
+        </View>
+
+        <View
+          style={{
+            maxHeight: 150,
+            overflow: "hidden",
+            marginBottom: SPACES.s,
+            marginTop: SPACES.xs,
+          }}
+        >
+          <EnrichedTextInput
+            style={{ fontSize: 14 }}
+            defaultValue={item?.content.trim() || ""}
+            editable={false}
+            androidExperimentalSynchronousEvents={false}
+          />
+        </View>
+
+        <View style={{ marginBottom: SPACES.s, flexDirection: "row" }}>
+          <Minus strokeWidth={1} />
+        </View>
+
         <Text style={styles.cardDate}>
           {new Date(item.updated_at).toLocaleDateString()}
         </Text>
       </View>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={() => handleDelete(item.id)}
         style={styles.deleteButton}
       >
         <Text style={styles.deleteText}>Delete</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </TouchableOpacity>
   );
 
@@ -91,21 +138,38 @@ export function NotesListScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Notes</Text>
-        <TouchableOpacity onPress={handleLogout}>
+
+        <Pressable
+          style={{
+            backgroundColor: COLORS.white,
+            width: 46,
+            height: 46,
+            borderRadius: 16,
+            justifyContent: "center",
+            alignItems: "center",
+            borderCurve: "continuous",
+          }}
+        >
+          <Ellipsis size={24} color={COLORS.black} />
+        </Pressable>
+        {/* <TouchableOpacity onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
-      <FlatList
+      <View style={styles.searchContainer}>
+        <Search size={24} color={COLORS.black} />
+        <TextInput placeholder="Search notes..." style={styles.searchInput} />
+      </View>
+
+      <FlashList
         data={notes}
-        keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        masonry
+        numColumns={2}
         contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No notes yet. Create one!</Text>
-          </View>
-        }
+        showsVerticalScrollIndicator={false}
       />
 
       <TouchableOpacity
@@ -121,7 +185,7 @@ export function NotesListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: COLORS.background,
   },
   centerContainer: {
     flex: 1,
@@ -134,14 +198,27 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     color: "#000",
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+    marginHorizontal: 16,
+    paddingHorizontal: SPACES.m,
+    paddingVertical: 8,
+    borderRadius: 13,
+    marginBottom: 8,
+    borderCurve: "continuous",
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
   },
   logoutText: {
     color: "red",
@@ -152,32 +229,30 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   card: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: COLORS.white,
+    marginBottom: 16,
+    borderRadius: 13,
+    paddingVertical: SPACES.l,
+    paddingLeft: SPACES.l - 5,
+    paddingRight: SPACES.l,
+    borderCurve: "continuous",
+    marginRight: SPACES.m,
   },
   cardContent: {
     flex: 1,
     marginRight: 10,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "600",
     marginBottom: 4,
     color: "#333",
+    paddingTop: 0,
+    marginTop: 0,
   },
   cardDate: {
     fontSize: 12,
-    color: "#888",
+    color: COLORS.black,
   },
   deleteButton: {
     padding: 8,

@@ -6,10 +6,10 @@ export const COLORS = {
   primary: "#007AFF",
   secondary: "#0056B3",
 
-  white: "#FFFFFF",
+  white: "#ffff",
   black: "#1E1E1E",
 
-  background: "#F7EDC9",
+  background: "#fefae0",
   surface: "#FFFFFF",
   error: "#FF4D4F",
 };
