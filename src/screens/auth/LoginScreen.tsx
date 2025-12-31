@@ -136,14 +136,14 @@ export function LoginScreen() {
                   </Pressable>
                 </View>
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={() => navigation.navigate("Signup")}
                   style={styles.forgetPassword}
                 >
                   <Text style={[styles.linkText, { opacity: 0.6 }]}>
                     Forget your password ?
                   </Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
                 {error && <Text style={styles.errorText}>{error}</Text>}
               </View>
