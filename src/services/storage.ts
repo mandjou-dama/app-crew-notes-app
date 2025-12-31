@@ -1,27 +1,30 @@
-import * as Crypto from 'expo-crypto';
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
-import { createMMKV } from 'react-native-mmkv';
+import { Platform } from "react-native";
+
+import * as Crypto from "expo-crypto";
+import * as SecureStore from "expo-secure-store";
+
+import { createMMKV } from "react-native-mmkv";
 
 const fetchOrGenerateEncryptionKey = (): string => {
-  const encryptionKey = SecureStore.getItem('session-encryption-key');
+  const encryptionKey = SecureStore.getItem("session-encryption-key");
 
   if (encryptionKey) {
     return encryptionKey;
   } else {
     const uuid = Crypto.randomUUID();
-    SecureStore.setItem('session-encryption-key', uuid);
+    SecureStore.setItem("session-encryption-key", uuid);
     return uuid;
   }
 };
 
 export const storage = createMMKV({
-  id: 'session',
-  encryptionKey: Platform.OS === 'web' ? fetchOrGenerateEncryptionKey() : undefined,
+  id: "session",
+  encryptionKey:
+    Platform.OS === "web" ? fetchOrGenerateEncryptionKey() : undefined,
 });
 
 // TODO: Remove this workaround for encryption: https://github.com/mrousavy/react-native-mmkv/issues/665
-storage.set('workaround', true);
+storage.set("workaround", true);
 
 /**
  * A simple wrapper around MMKV that provides a base API

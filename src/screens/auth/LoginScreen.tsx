@@ -1,165 +1,246 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Platform, KeyboardAvoidingView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '@/types/navigation';
-import { authService } from '@/services/auth.service';
+import React, { useState } from "react";
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
+import { Eye, EyeClosed, Lock, Mailbox } from "lucide-react-native";
+import {
+  KeyboardAvoidingView,
+  KeyboardController,
+} from "react-native-keyboard-controller";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+import { AuthStackParamList } from "@/types/navigation";
+import { COLORS, SPACES } from "@/constant";
+import { authService } from "@/services/auth.service";
+import Button from "@/components/Button";
+
+type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
 
 export function LoginScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const insets = useSafeAreaInsets();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
-      setError('Please enter both email and password.');
+      setError("Please enter both email and password.");
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
-      const { error } = await authService.signIn({ 
-        email: email.trim(), 
-        password 
+      const { error } = await authService.signIn({
+        email: email.trim(),
+        password,
       });
-      
+
       if (error) {
         setError(error.message);
       }
       // On success, Supabase listener in App.tsx will switch root navigator
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
+      setError(err.message || "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top + 50, paddingBottom: insets.bottom },
+      ]}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={20}
         style={styles.keyboardView}
       >
-        <View style={styles.content}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to continue</Text>
+        <TouchableWithoutFeedback
+          onPress={() => KeyboardController.dismiss()}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.content}>
+            <View>
+              <Text style={styles.title}>Sign in to continue</Text>
+              <Text style={styles.subtitle}>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat
+                sapiente aperiam quo exercitationem.
+              </Text>
 
-          <View style={styles.form}>
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#666"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-            
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor="#666"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+              <View style={styles.form}>
+                <View style={styles.inputContainer}>
+                  <Mailbox color={COLORS.black} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your email"
+                    placeholderTextColor="#666"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                  />
+                </View>
 
-            {error && <Text style={styles.errorText}>{error}</Text>}
+                <View
+                  style={[
+                    styles.inputContainer,
+                    { justifyContent: "space-between" },
+                  ]}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <Lock color={COLORS.black} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your password"
+                      placeholderTextColor="#666"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={!passwordVisible}
+                    />
+                  </View>
 
-            <TouchableOpacity 
-              style={[styles.button, loading && styles.buttonDisabled]} 
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Log In</Text>
-              )}
-            </TouchableOpacity>
+                  <Pressable
+                    hitSlop={10}
+                    onPress={() => setPasswordVisible(!passwordVisible)}
+                    style={{ opacity: 0.4 }}
+                  >
+                    {passwordVisible ? (
+                      <Eye size={18} />
+                    ) : (
+                      <EyeClosed size={18} />
+                    )}
+                  </Pressable>
+                </View>
 
-            <TouchableOpacity 
-              onPress={() => navigation.navigate('Signup')}
-              style={styles.linkButton}
-            >
-              <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
-            </TouchableOpacity>
+                {/* <TouchableOpacity
+                  onPress={() => navigation.navigate("Signup")}
+                  style={styles.forgetPassword}
+                >
+                  <Text style={[styles.linkText, { opacity: 0.6 }]}>
+                    Forget your password ?
+                  </Text>
+                </TouchableOpacity> */}
+
+                {error && <Text style={styles.errorText}>{error}</Text>}
+              </View>
+            </View>
+
+            <View>
+              <Button
+                title="Login"
+                onPress={handleLogin}
+                isLoading={loading}
+                disabled={
+                  email.length < 5
+                    ? true
+                    : false || password.length < 8
+                    ? true
+                    : false || loading
+                }
+              />
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Signup")}
+                style={styles.linkButton}
+              >
+                <Text style={styles.linkText}>
+                  Don't have an account? Sign Up
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.background,
   },
   keyboardView: {
     flex: 1,
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 24,
+    justifyContent: "space-between",
+    paddingHorizontal: SPACES.l,
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
-    color: '#000',
+    color: COLORS.black,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: COLORS.black,
     marginBottom: 32,
+    opacity: 0.6,
   },
   form: {
     gap: 16,
   },
-  input: {
+  inputContainer: {
     height: 50,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    borderColor: "#c7c7c7",
+    borderRadius: 13,
     paddingHorizontal: 16,
+    backgroundColor: COLORS.background,
+    flexDirection: "row",
+    borderCurve: "continuous",
+    alignItems: "center",
+    gap: 8,
+  },
+  input: {
     fontSize: 16,
-    backgroundColor: '#fafafa',
+    flex: 0.8,
   },
   errorText: {
-    color: 'red',
+    color: "red",
     fontSize: 14,
-  },
-  button: {
-    height: 50,
-    backgroundColor: '#000',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  forgetPassword: {
+    marginTop: 0,
   },
   linkButton: {
-    alignItems: 'center',
-    marginTop: 16,
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 10,
   },
   linkText: {
-    color: '#000',
+    color: COLORS.black,
     fontSize: 14,
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
   },
 });

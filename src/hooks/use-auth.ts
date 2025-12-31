@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
-import { supabase } from '@/services/supabase';
-import { useAuthStore } from '@/store/auth.store';
+import { useEffect } from "react";
+
+import { useAuthStore } from "@/store/auth.store";
+import { supabase } from "@/services/supabase";
 
 export function useAuth() {
   const { setAuth, clearAuth, setHydrated, isHydrated } = useAuthStore();
@@ -9,16 +10,19 @@ export function useAuth() {
     // 1. Initial Session Hydration
     const hydrateAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
         if (error) throw error;
-        
+
         if (session) {
           setAuth(session);
         } else {
           clearAuth(); // Explicitly clear to ensures clean state
         }
       } catch (error) {
-        console.warn('Auth hydration failed:', error);
+        console.warn("Auth hydration failed:", error);
         clearAuth();
       } finally {
         setHydrated();
@@ -28,7 +32,9 @@ export function useAuth() {
     hydrateAuth();
 
     // 2. Auth State Sync Listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setAuth(session);
       } else {
